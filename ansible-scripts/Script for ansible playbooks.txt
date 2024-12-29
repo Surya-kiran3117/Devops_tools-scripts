@@ -1,0 +1,38 @@
+Script for ansible playbook for install and start nginx application on target server
+-------------------------------------------------------------------------------------------
+
+---
+- name: install and start inginx
+  hosts: all
+  become: true
+
+  tasks:
+    - name: install nginx
+      apt:
+        name: nginx
+        state: present
+
+    - name: start nginx
+      service:
+        name: nginx
+        state: started
+
+
+-----------------------------------------------------
+Script for ansible playbook for stop nginx application on target server
+
+
+---
+- name: stop nginx
+  hosts: all
+  become: true
+
+  tasks:
+    - name: stop nginx
+      service:
+         name: nginx
+         state: stopped
+
+------------------------------------------------------
+
+
