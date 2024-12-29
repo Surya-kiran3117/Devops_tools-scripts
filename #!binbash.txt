@@ -1,0 +1,53 @@
+#!/bin/bash
+
+#create a folder
+mkdir shell-folder
+
+#create two files
+cd shell-folder
+touch first-file second-file 
+------------------------------------------------------
+
+
+
+#!/bin/bash
+
+
+##########################
+#Author : Surya
+#Date : 24-12-2024
+#
+#this is the script for node health of server
+#
+# version: v1
+##########################
+
+
+df -h
+
+
+free -g
+
+nproc
+------------------------------------------------------
+
+#!/bin/bash
+
+############################
+#Author: Surya
+#date: 
+#this is the script for access aws services
+#
+#version:v1
+############################
+
+aws s3 ls
+
+aws ec2 describe-instances
+
+aws ec2 describe-instances | jq '.Reservations[].instances[].instancesid[]'
+
+
+aws iam users-list
+
+---------------------------------------------------------

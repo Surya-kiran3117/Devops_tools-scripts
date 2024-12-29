@@ -1,0 +1,100 @@
+Shell Commands 
+----------------
+sudo su  --> used to go to root user of the server
+
+ls       --> used to list the files and folders
+
+ls -ltr  --> used to get the details of the file or directory
+
+pwd      --> used to find in which directory you r working
+
+mkdir (directory name)   --> used to create a directory
+ 
+cd (directory name)      --> used to change the directory
+ 
+cd ..    --> used to go to previous directory
+
+cd ../.. --> used to go to directory to jump with 2 previous directories
+
+touch (file name)   --> used to create an empty file
+
+cat (file name)     --> used to view the content r data in the file
+
+vi (file name)      --> used to create & write the data r modify the data in the file
+
+:q!      --> used to quit from the file  
+
+:wq!     --> used to save and come out of the file 
+------------------------------------------------------------------------------------------
+
+free -g  --> used to get memory of the server
+
+nproc    --> used to get cpu of the server
+
+top      --> used to get the total information about the processors & server
+
+ps -ef   --> used to get the running processes in the server
+
+df -Th   --> used to get the disk space
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
