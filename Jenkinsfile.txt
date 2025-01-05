@@ -1,0 +1,99 @@
+pipeline{
+    agent any
+
+    tools{
+        maven "maven3"
+        jdk "java17"
+    }
+
+    environment{
+        //replace the sonar-name with which is given in tools section in jenkins on sonarqube column
+        SONAR_HOME= tool 'sonar-name'
+    }
+
+    stages{
+        stage("Cleanup Workspace"){
+            steps{      
+                cleanWs()
+            }  
+        }
+
+        stage("Git checkout"){
+            steps{ 
+                //replace the repourl with the project repo url
+                git repourl     
+            }  
+        }
+
+        stage("Code compile"){
+            steps{      
+                sh "mvn clean compile"
+            }  
+        }
+
+        stage("Unit Testing"){
+            steps{      
+                //to test the code use without -D statement 
+                //otherwise to skip testing the code use with -D statement 
+                sh "mvn test -Dmaven.test.skip=true"
+            }  
+        }
+
+        stage("SonarQube Analysis"){
+            steps{      
+                //replace sonar with the system section configure sonarname in jenkins
+                withSonarQubeEnv('sonar')
+                sh ''' $SONAR_HOME/BIN/sonar-scanner -Dsonar.projectkey=demo  -Dsonar.projectName=demo \ 
+                -Dsonar.java.binaries=.''' // we have to give which binaries to scan //. >> means all  
+            }  
+        }
+
+        stage("OWASP Dependency"){
+            steps{      
+                dependencyCheck additionalArguments: '--scan ./', odcInstallation: 'depedency-check'
+                dependencyCheckpublisher pattern: '**/dependency-check-report.xml'
+            }  
+        }
+
+        stage("Build"){
+            steps{   
+                sh " mvn package -Dmaven.test.skip=true"   
+            }  
+        }
+
+        stage("Deploy to nexus"){
+            steps{   
+                withMaven(globalMavenSettingsConfig: 'global',jdk: 'jdk17',maven: 'maven3', mavensettingconfig: '', traceability: true)   
+                sh "mvn deploy -Dmaven.test.skip=true "
+            }  
+        }
+
+        stage("Docker Build and tag"){
+            steps{    
+                //paste the id of your docker credentials and replace the url with the original dockerhub url
+                withDockerRegistry(CredentialsId: 'paste the id here', url: 'dockerhuburl') 
+                //replace the reponame in dockerhub reponame and tag also after that mention the dockerfile path 
+                sh "docker build -t reponame:tag -f dockerfile ."
+            }  
+        }
+
+        stage("Trivy Scan"){
+            steps{   
+                //replace reponame with above build image name 
+                sh "trivy image reponame:tag > trivy-report.txt "   
+            }  
+        }
+
+        stage("Docker push"){
+            steps{   
+                 //paste the id of your docker credentials
+                withDockerRegistry(CredentialsId: 'paste the id here') 
+                //replace the reponame in dockerhub reponame and tag also after that mention the dockerfile path 
+                sh "docker push -t reponame:tag "  
+            }  
+        }
+
+        // now go and check ur dockerhub the image is there in your repo which u created 
+    }
+    
+}
