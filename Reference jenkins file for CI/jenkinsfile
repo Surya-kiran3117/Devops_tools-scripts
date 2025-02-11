@@ -6,6 +6,7 @@ pipeline{
         maven 'maven3'
     }
     environment{
+        //replace the tool name with original name which is configured in global tool configure section
         SCANNER_HOME= tool 'sonar-scanner'
     }
 
