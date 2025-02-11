@@ -1,0 +1,88 @@
+pipeline{
+    agent any
+    
+    tools{
+        jdk 'jdk17'
+        maven 'maven3'
+    }
+    environment{
+        SCANNER_HOME= tool 'sonar-scanner'
+    }
+
+    stages{
+        stage("Cleanup Workspace"){
+            steps{
+                cleanWs()
+            } 
+        }
+
+        stage("Git Checkout"){
+            steps{
+                //replace the credentialsid & url with ur requirement
+                git branch: 'main', changelog: false, credentialsId: '', poll: false, url: ''
+            } 
+        }
+
+        stage("Compile"){
+            steps{
+                sh "mvn clean compile -DskipTests=true"
+            } 
+        }
+
+        stage("OWasp scan"){
+            steps{
+                dependencyCheck additionalArguments: '--scan ./', odcInstallation: 'depedency-check'
+                dependencyCheckpublisher pattern: '**/dependency-check-report.xml'
+            } 
+        }
+
+        stage("sonarqube"){
+            steps{
+                //replace the sonar-server name with systemconfigure section sonarqubename in jenkins ui
+                withSonarQubeEnv('sonar-server'){
+                    //replace the project name as ur requirement
+                    //repalce the projectkey also as ur requirement
+                    sh '''$SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName=Shopping-cart \
+                    -Dsonar.java.binaries=.\
+                    Dsonar.projectKey=Shopping-cart'''
+                }
+            } 
+        }
+
+        //After completion of analysis build the code using maven 
+        stage("Build"){
+            steps{
+                sh 'mvn clean package -DskipTests=true'
+            } 
+        }
+
+        //this section is for to build the image and push to docker-repository
+        stage("Docker Build & Push"){
+            steps{
+                script{
+                    //replace the credentialsid and toolname as ur requirement/ generate these syntax with pipeline syntax option on jenkins ui
+                    withDockerRegistry(CredentialsId: 'paste the id here', toolname: 'docker'){
+                     //replace the imagename tag and ur dockerfile path as ur requirement (.)dot is important for file location
+                     sh "docker build -t imagename -f dockerfile ."
+                     sh " docker tag imagename username/imagename:latest"
+                     sh " docker push username/imagename:latest"
+                    }
+                }
+            }
+        }
+
+        //this section is for to deploy the image to container 
+        stage("Deploy to container"){
+            steps{
+                script{
+                    //replace the credentialsid and toolname as ur requirement/ generate these syntax with pipeline syntax option on jenkins ui
+                    withDockerRegistry(CredentialsId: 'paste the id here', toolname: 'docker'){
+                        //repalce the name & (-p)port & imagename as ur requirement
+                     sh "docker run -d --name shop-shop -p 8070:8070 imagename:tag"
+                     
+                    }
+                }
+            }
+        }
+    } 
+}
