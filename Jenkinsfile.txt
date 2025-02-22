@@ -7,7 +7,7 @@ pipeline{
     }
 
     environment{
-        //replace the sonar-name with which is given in tools section in jenkins on sonarqube column
+        //replace the sonar-name with which is given in global-tools section in jenkins on sonarqube column
         SONAR_HOME= tool 'sonar-name'
     }
 
