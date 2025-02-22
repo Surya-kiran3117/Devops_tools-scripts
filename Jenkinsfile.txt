@@ -41,7 +41,7 @@ pipeline{
 
         stage("SonarQube Analysis"){
             steps{      
-                //replace sonar with the system section configure sonarname in jenkins
+                //replace sonar with the configuresystem section configure sonarname in jenkins
                 withSonarQubeEnv('sonar')
                 sh ''' $SONAR_HOME/BIN/sonar-scanner -Dsonar.projectkey=demo  -Dsonar.projectName=demo \ 
                 -Dsonar.java.binaries=.''' // we have to give which binaries to scan //. >> means all  
