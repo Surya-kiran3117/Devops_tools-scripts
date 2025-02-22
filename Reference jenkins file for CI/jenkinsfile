@@ -39,7 +39,7 @@ pipeline{
 
         stage("sonarqube"){
             steps{
-                //replace the sonar-server name with systemconfigure section sonarqubename in jenkins ui
+                //replace the sonar-server name with configuresystem section sonarqubename in jenkins ui
                 withSonarQubeEnv('sonar-server'){
                     //replace the project name as ur requirement
                     //repalce the projectkey also as ur requirement
