@@ -1,0 +1,54 @@
+🔹 Step 1: Create a New Directory for Your Terraform Project
+Open a terminal and run:
+
+mkdir terraform-project && cd terraform-project
+
+
+🔹 Step 2: Create a Terraform Configuration File
+Inside your terraform-project folder, create a file named main.tf and paste the following code:
+
+provider "aws" {
+  region = "us-east-1"  # Change this to your preferred region
+}
+
+resource "aws_instance" "my_ec2" {
+  ami           = "ami-0c55b159cbfafe1f0"  # Amazon Linux 2 AMI (Update if needed)
+  instance_type = "t2.micro"
+
+  tags = {
+    Name = "MyFirstTerraformInstance"
+  }
+}
+
+#####Above script does the following:
+✅ Defines AWS as the provider.
+✅ Creates an EC2 instance with type t2.micro.
+✅ Tags the instance as MyFirstTerraformInstance.
+
+🔹 Step 3: Initialize Terraform
+Run:
+
+terraform init       ########This downloads the required AWS provider plugins.
+
+🔹 Step 4: Validate the Configuration
+Check for errors with:
+
+terraform validate       #########If no errors, you’re good to go! 🚀
+
+🔹 Step 5: Plan the Deployment
+Run:
+
+terraform plan    ######This shows what Terraform will create without making changes.
+
+🔹 Step 6: Apply the Configuration (Deploy the EC2 Instance)
+Run:
+
+terraform apply -auto-approve    #########3This will actually create the EC2 instance in AWS.
+
+✅ Once done, go to AWS Console → EC2 and check if the instance is created!
+
+🔹 Step 7: Destroy the Resources (Optional)
+If you want to clean up and delete the instance, run:
+
+terraform destroy -auto-approve        ####This will remove all the resources Terraform created.
+
