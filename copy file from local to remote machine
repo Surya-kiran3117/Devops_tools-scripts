@@ -7,3 +7,10 @@ scp -i /path/to/local/file /path/to/local/file username@remote_host:/path/to/des
  scp -i C:\Users\Dell\OneDrive\Desktop\awskeypairs\mvn-pair.pem C:\Users\Dell\OneDrive\Desktop\awskeypairs\mvn-pair.pem root@3.111.38.210:/home/ubuntu
 
 #########change the filename and path of the keypair file and user 
+
+#############If you are logged in as a normal user and want to copy a file to a root-owned directory:
+
+sudo cp /home/ubuntu_user/file.txt /root/
+
+############sudo gives temporary root privileges.
+############/root/ is the home directory of the root user.
