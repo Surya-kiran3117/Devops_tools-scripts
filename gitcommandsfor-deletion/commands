@@ -1,0 +1,33 @@
+Delete a Branch in Git
+1. Delete a Local Branch
+
+######To delete a local branch, use:
+
+    git branch -d branch_name
+
+######Above command will works only if the branch has been merged.
+
+######If the branch is not merged and you still want to delete it, force delete with:
+
+   git branch -D branch_name
+
+2. Delete a Remote Branch
+
+######To delete a branch from a remote repository (e.g., GitHub, GitLab):
+
+   git push origin --delete branch_name
+
+######Alternatively, you can use:
+
+   git push origin :branch_name
+
+3. Verify Deletion
+
+After deleting, check branches:
+
+######Local branches:
+
+   git branch
+
+######Remote branches:
+   git branch -r
