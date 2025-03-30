@@ -1,0 +1,32 @@
+provider "aws"{
+        region = var.aws_region
+}
+
+resource "aws_instance" "slave-instance"{
+        ami = var.ami_id
+        instance_type = var.instance_type
+        key_name = var.key_type
+
+        tags = {
+        Name = "myslave-server"
+        }
+}
+
+resource "aws_s3_bucket" "s3_bucket_slave"{
+        bucket = "slavebucket-123"
+}
+
+resource "aws_s3_bucket_versioning" "version-1"{
+        bucket = aws_s3_bucket.s3_bucket_slave.id
+        versioning_configuration {
+        status = "Enabled"
+        }
+}
+
+terraform{
+        backend "s3"{
+        bucket = "slavebucket-123"
+        key = "terraform_project/terraform.tfstate"
+        region = "ap-south-1"
+        }
+}

@@ -1,0 +1,21 @@
+# 🔥 Create an S3 Bucket for Terraform State
+resource "aws_s3_bucket" "terraform_state" {
+  bucket = "my-terraform-state-bucket-123"  # Change to a unique name
+}
+
+# 🔒 Enable Versioning for the S3 Bucket (Optional but Recommended)
+resource "aws_s3_bucket_versioning" "versioning" {
+  bucket = aws_s3_bucket.terraform_state.id
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
+
+# 📌 Store the Terraform State in the S3 Bucket
+terraform {
+  backend "s3" {
+    bucket = "my-terraform-state-bucket-123"  # Same as the created bucket
+    key    = "terraform/state.tfstate"
+    region = "us-east-1"
+  }
+}

@@ -1,0 +1,4 @@
+module "slave-instance"{
+        source = "./modules/ec2_instance"
+        instance_name = "myslaveinstance"
+}
