@@ -1,0 +1,16 @@
+#######This file is for s3 bucket policy for accessing the object using policies
+
+{
+    "version": "2012-10-17"
+    "statement": [
+        {
+            "sid": "publicReadGetObject",
+            "Effect": "Allow",
+            "Principal": "*",
+            "Action": "s3:GetObject",
+            "Resource": [
+                "arn:aws:s3:::www.mysample-app.com/web_application.html",
+            ]
+        }
+    ] 
+}
