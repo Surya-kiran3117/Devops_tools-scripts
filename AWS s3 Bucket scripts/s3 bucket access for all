@@ -9,9 +9,10 @@
             "Principal": "*",
             "Action": "s3:GetObject",
             "Resource": [
-                "arn:aws:s3:::www.mysample-app.com/web_application.html",
-                "arn:aws:s3:::www.mysample-app.com/*"
+                "arn:aws:s3:::www.mysample-app.com/web_application.html",   ###(For certain object in the bucket)
+                "arn:aws:s3:::www.mysample-app.com/*"    #####(For all the objects in the bucket)
             ]
         }
     ]
 }
+
