@@ -1,5 +1,5 @@
 #######This file is for s3 bucket policy for accessing the object using policies
-
+#######This script is used for accessing the object using object url for all the users publicly
 {
     "Version": "2012-10-17",
     "Statement": [
