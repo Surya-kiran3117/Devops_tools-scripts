@@ -1,0 +1,54 @@
+pipeline {
+    agent any
+    
+    environment{
+        SCANNER_HOME = tool 'mysonar'
+    }
+    stages {
+        stage('clean WS') {
+            steps {
+                cleanWs()
+            }
+        }
+        stage('code clone') {
+            steps {
+                git'https://github.com/Suryakiran-3117/flask-app.git'
+            }
+        }
+        stage ('code Analysis') {
+            steps {
+                withSonarQubeEnv('sonar'){
+                    sh '''$SCANNER_HOME/bin/sonar-scanner \
+                    -Dsonar.projectName=flask-app \
+                    -Dsonar.projectKey=flask-app \
+                    '''
+                }
+            }
+        }
+        
+        stage ('Quality Gates') {
+            steps {
+                waitForQualityGate abortPipeline: false, credentialsId: 'sonar-token'
+            }
+        }
+        
+        stage('Build docker image') {
+            steps {
+                sh 'docker build -t flask-app .'
+            }
+        }
+        stage('image tag') {
+            steps {
+                sh 'docker tag flask-app suryakiran31/flask-app:latest'
+                sh 'docker push suryakiran31/flask-app:latest'
+            }
+        }
+        stage('container run'){
+            steps {
+                sh 'docker stop flaskapp-contr || true'
+                sh 'docker rm flaskapp-contr || true'
+                sh 'docker run -d -p 5000:5000 --name flaskapp-contr suryakiran31/flask-app:latest'
+            }
+        }
+    }
+}
