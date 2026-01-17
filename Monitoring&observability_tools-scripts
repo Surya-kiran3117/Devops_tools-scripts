@@ -1,0 +1,245 @@
+sudo apt update
+sudo apt install apache2 -y
+sudo systemctl enable apache2
+sudo systemctl start apache2 
+sudo systemctl status apache2 
+
+Enable Apache’s internal status page change the apache2 config files in the below path
+--------------------------------------------------------------------------------------
+
+sudo nano /etc/apache2/mods-enabled/status.conf
+
+<Location /server-status>
+        SetHandler server-status
+        Require local    (change here to require all granted)
+        #Require ip 192.0.2.0/24
+</Location>
+
+
+Node_exporter port for node metrics (9100)
+-------------------------------------------
+cd /tmp
+wget https://github.com/prometheus/node_exporter/releases/download/v1.10.2/node_exporter-1.10.2.linux-amd64.tar.gz
+tar xvfz node_exporter-1.10.2.linux-amd64.tar.gz
+cd node_exporter-1.10.2.linux-amd64
+./node_exporter
+
+
+apache exporter port is (9117)
+-------------------------------
+wget https://github.com/Lusitaniae/apache_exporter/releases/download/v1.0.0/apache_exporter-1.0.0.linux-amd64.tar.gz
+tar xvzf apache_exporter-1.0.0.linux-amd64.tar.gz
+cd apache_exporter-1.0.0.linux-amd64/
+./apache_exporter
+
+
+prometheus install url and port is (9090)
+------------------------------------------
+
+Create Prometheus User (Best Practice)
+--------------------------------------
+
+sudo useradd --no-create-home --shell /bin/false prometheus
+
+wget https://github.com/prometheus/prometheus/releases/download/v2.48.0/prometheus-2.48.0.linux-amd64.tar.gz
+tar xvzf prometheus-2.48.0.linux-amd64.tar.gz
+cd prometheus-2.48.0.linux-amd64/
+./prometheus
+
+Move Prometheus Binaries
+--------------------------
+From extracted directory:
+---------------------------
+
+sudo mkdir /etc/prometheus
+sudo mkdir /var/lib/prometheus
+
+sudo cp prometheus promtool /usr/local/bin/
+sudo cp prometheus.yml /etc/prometheus/
+
+
+Permissions:
+--------------
+
+sudo chown -R prometheus:prometheus /etc/prometheus /var/lib/prometheus
+sudo chown prometheus:prometheus /usr/local/bin/prometheus
+sudo chown prometheus:prometheus /usr/local/bin/promtool
+
+Configure Prometheus Targets
+-----------------------------
+
+sudo nano /etc/prometheus/prometheus.yml
+
+changed the content with below script
+----------------------------------------
+
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  - job_name: "node_exporter"
+    static_configs:
+      - targets: ["localhost:9100"]
+
+  - job_name: "apache_exporter"
+    static_configs:
+      - targets: ["localhost:9117"]
+
+Validate:
+-----------
+promtool check config /etc/prometheus/prometheus.yml
+
+Create systemd Service for Prometheus:
+--------------------------------------
+
+sudo nano /etc/systemd/system/prometheus.service
+
+change the below script in the prometheus.service file
+------------------------------------------------------
+
+[Unit]
+Description=Prometheus Monitoring
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+User=prometheus
+Group=prometheus
+Type=simple
+ExecStart=/usr/local/bin/prometheus \
+  --config.file=/etc/prometheus/prometheus.yml \
+  --storage.tsdb.path=/var/lib/prometheus \
+  --web.listen-address=:9090
+
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+
+Reload & start:
+-----------------
+sudo systemctl daemon-reload
+sudo systemctl enable prometheus
+sudo systemctl start prometheus
+
+Check status:
+-------------
+sudo systemctl status prometheus
+
+if we get the prometheus application not running in our server we get the failure error
+----------------------------------------------------------------------------------------
+reason for the prometheus starting failure
+-------------------------------------------
+(((Port 9090 is already being used by another Prometheus process.
+
+This usually happens when:
+--------------------------
+You started Prometheus manually (./prometheus)
+
+Then tried to start it again via systemd)))
+
+use below command to kill the prometheus process and again start that
+---------------------------------------------------------------------
+
+sudo pkill prometheus
+
+Reset & start systemd service
+-----------------------------
+
+sudo systemctl start prometheus
+
+Check:
+------
+sudo systemctl status prometheus
+
+Expected:
+-----------
+Active: active (running)
+
+-------------------------------------------------------------------------------------
+
+
+install alert manager for prometheus port is (9093)
+-------------------------------------------------------
+wget https://github.com/prometheus/alertmanager/releases/download/v0.27.0/alertmanager-0.27.0.linux-amd64.tar.gz
+tar xvzf alertmanager-0.27.0.linux-amd64.tar.gz
+cd alertmanager-0.27.0.linux-amd64/
+./alertmanager
+
+
+install grafana port is (3000)
+-------------------------------
+sudo apt install -y apt-transport-https software-properties-common
+sudo mkdir -p /etc/apt/keyrings/
+wget -q -O - https://packages.grafana.com/gpg.key | sudo gpg --dearmor -o /etc/apt/keyrings/grafana.gpg
+echo "deb [signed-by=/etc/apt/keyrings/grafana.gpg] https://packages.grafana.com/oss/deb stable main" | sudo tee /etc/apt/sources.list.d/grafana.list
+sudo apt update && sudo apt install grafana -y
+sudo systemctl enable --now grafana-server
+
+
+to import dashboards of these tools ports
+-------------------------------------------
+● Import dashboard 1860 → Node Exporter
+● Import dashboard 3894 → Apache
+
+
+
+
+REVERSE PROXY FOR Prometheus
+----------------------------
+
+Secure Prometheus with Basic Auth
+--------------------------------------
+Prometheus does NOT natively support auth, so we use Nginx reverse proxy (industry standard).
+
+🔐 Step 1: Install Nginx & htpasswd
+------------------------------------
+sudo apt update
+sudo apt install nginx apache2-utils -y
+
+
+Create auth user:
+------------------
+sudo htpasswd -c /etc/nginx/.htpasswd admin
+
+(Enter password)
+
+
+Step 2: Configure Nginx for Prometheus
+---------------------------------------
+sudo nano /etc/nginx/sites-available/prometheus
+
+change the below code in the prometheus file
+---------------------------------------------
+server {
+    listen 80;
+
+    location / {
+        auth_basic "Prometheus Protected";
+        auth_basic_user_file /etc/nginx/.htpasswd;
+
+        proxy_pass http://localhost:9090;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+}
+
+
+Enable site:
+-------------
+sudo ln -s /etc/nginx/sites-available/prometheus /etc/nginx/sites-enabled/
+sudo nginx -t
+sudo systemctl restart nginx
+
+
+Close 9090 Public Access
+Remove 9090 from Security Group
+Allow only 80 (Nginx)
+
+we can access prometheus using nginx application on port 80............END(.)
+
+
